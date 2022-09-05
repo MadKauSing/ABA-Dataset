@@ -1,3 +1,4 @@
+sudo apt install ffmpeg
 pip install virtualenv
 python3 -m venv aba
 

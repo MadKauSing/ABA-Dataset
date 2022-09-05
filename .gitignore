@@ -1,1 +1,6 @@
 /aba
+/spotdl-temp
+
+
+*.cache
+*.spotdl-cache
