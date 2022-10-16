@@ -1,0 +1,6 @@
+numpy
+pandas
+spotipy
+pyechonest
+spotdl
+ipykernel
