@@ -70,6 +70,9 @@ genre_dict={
 }
 print(genre_dict)
 
+# Reset the filesystem
+os.system("rm -r aba")
+
 #creating filesystem
 os.system('mkdir aba')
 for i in genres:
@@ -77,6 +80,7 @@ for i in genres:
 
 
 dataset = []
+song_limit_per_genre = 100
 
 for genre in genres:
     song_count = 0
@@ -84,7 +88,7 @@ for genre in genres:
         try:
             genre=genre.replace(' ','_')
             res = spotify.playlist_items(playlist_id=playlist)
-            if song_count % 100 == 0 and song_count != 0:
+            if song_count % song_limit_per_genre == 0 and song_count != 0:
                     break
             for track in res['items']:
                 artist_names = []
@@ -92,16 +96,16 @@ for genre in genres:
                     artist_names.append(artist_name['name'])
                 
                 data = [ track['track']['id'],track['track']['name'],artist_names,genre ]
-
+                var=os.system(f"cd aba/{genre} && spotdl https://open.spotify.com/track/{data[0]} --output-format mp3" )
                 #download the song also
-                if os.system(f"cd aba/{genre} && spotdl https://open.spotify.com/track/{data[0]} --output-format wav" )==256 and data in dataset:
+                if var!=0 or data in dataset or track['track']['name'] == '':
                     print(data)
                     continue
                 else:
                     dataset.append(data)
+                    song_count += 1
                 
-                song_count += 1
-                if song_count % 100 == 0 and song_count != 0:
+                if song_count % song_limit_per_genre == 0 and song_count != 0:
                     break
         except:
             print("Invalid playlist: ",playlist)
