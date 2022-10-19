@@ -4,6 +4,7 @@ from spotipy.oauth2 import SpotifyOAuth
 import json
 import csv
 import os
+import subprocess
 
 CLIENT_ID = "834e7549e0fb4b4a89ca4ba4ead45f93"
 CLIENT_SECRET = "470a82dcfc844634ad6705a1a191866d"
@@ -91,9 +92,9 @@ genre_dict={
   "06LiEciv9YZ4XLGqX5Vm4S"
  ]
 }
+#genre dict created
 print(genre_dict)
 
-# Reset the filesystem
 os.system("rm -r aba")
 
 # creating filesystem
@@ -101,40 +102,38 @@ os.system('mkdir aba')
 for i in genres:
     os.system(f"mkdir aba/{i}")
 
-fow=open("debug.txt","w")
+fow=open("dataset.txt","w")
 
+dataset=[]
 
-dataset = []
-song_limit_per_genre = 100
-
+song_limit=100
 for genre in genres:
-    song_count = 0
+    song_count=0
+
+    #iterating through each playlist
     for playlist in genre_dict[genre]:
-        
-        genre=genre.replace(' ','_')
         res = spotify.playlist_items(playlist_id=playlist)
-        if song_count % song_limit_per_genre == 0 and song_count != 0:
-                break
+
+        #for each track
         for track in res['items']:
-            artist_names = []
-            for artist_name in track['track']['album']['artists']:
-                artist_names.append(artist_name['name'])
-            
-            data = [ track['track']['id'],track['track']['name'],artist_names,genre ]
-            var=os.system(f"cd aba/{genre} && spotdl https://open.spotify.com/track/{data[0]} --output-format mp3" )
-            #download the song also
-            if var!=0 or data in dataset or track['track']['name'] == '':
-                print(data,"HARAM",file=fow)
-            else:
-                print(data,"Inshallaah",file=fow)
-                dataset.append(data)
-                song_count += 1
-    
-    print(song_count,"mashallah",file=fow)
+            id=track['track']['id']
+            name=track['track']['name']
+            genre=genre
 
-headers = ['id','name','artists','genre']
+            var=os.system(f"cd aba/{genre} && spotdl https://open.spotify.com/track/{id} --output-format mp3" )
+            os.wait()
+            song_count=os.system(f"cd aba/{genre} && ls *.mp3 |wc -l")
+            os.wait()
+            if var==0:
+                dataset.append([id,name,genre])
+            if song_count>=song_limit:
+                break
+            print(song_count,file=fow)
+            print(song_count,file=fow)
+        if song_count>=song_limit:
+            break
+    print(dataset,file=fow)
+        
 
-with open("./dataset.csv", 'w', encoding='UTF8',newline='') as f:
-    writer = csv.writer(f)
-    writer.writerow(headers)
-    writer.writerows(dataset)
+
+
