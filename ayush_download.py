@@ -5,6 +5,7 @@ import json
 import csv
 import os
 import subprocess
+import asyncio
 
 CLIENT_ID = "834e7549e0fb4b4a89ca4ba4ead45f93"
 CLIENT_SECRET = "470a82dcfc844634ad6705a1a191866d"
@@ -100,40 +101,43 @@ os.system("rm -r aba")
 # creating filesystem
 os.system('mkdir aba')
 for i in genres:
-    os.system(f"mkdir aba/{i}")
+    os.system(f"mkdir aba\{i}")
 
 fow=open("dataset.txt","w")
 
 dataset=[]
 
 song_limit=100
-for genre in genres:
-    song_count=0
 
-    #iterating through each playlist
-    for playlist in genre_dict[genre]:
-        res = spotify.playlist_items(playlist_id=playlist)
+async def generator():
+    for genre in genres:
+        song_count=0
 
-        #for each track
-        for track in res['items']:
-            id=track['track']['id']
-            name=track['track']['name']
-            genre=genre
+        #iterating through each playlist
+        for playlist in genre_dict[genre]:
+            res = spotify.playlist_items(playlist_id=playlist)
 
-            var=os.system(f"cd aba/{genre} && spotdl https://open.spotify.com/track/{id} --output-format mp3" )
-            os.wait()
-            song_count=os.system(f"cd aba/{genre} && ls *.mp3 |wc -l")
-            os.wait()
-            if var==0:
-                dataset.append([id,name,genre])
+            #for each track
+            for track in res['items']:
+                id=track['track']['id']
+                name=track['track']['name']
+                genre=genre
+
+                var=os.system(f"cd aba/{genre} && spotdl https://open.spotify.com/track/{id} --output-format mp3" )
+                await asyncio.sleep(1)
+                # os.wait()
+                song_count=os.system(f"cd aba/{genre} && ls *.mp3 |wc -l")
+                # os.wait()
+                if var==0:
+                    dataset.append([id,name,genre])
+                if song_count>=song_limit:
+                    break
+                print(song_count,file=fow)
+                print(song_count,file=fow)
             if song_count>=song_limit:
                 break
-            print(song_count,file=fow)
-            print(song_count,file=fow)
-        if song_count>=song_limit:
-            break
-    print(dataset,file=fow)
+        print(dataset,file=fow)
         
 
-
+asyncio.run(generator())
 
